@@ -7,20 +7,52 @@ public class SceneManager : MonoBehaviour
     public enum BatmanState { Normal, Stealth, Alert }
     public BatmanState currentState = BatmanState.Normal;
 
-    // Speed values for each state Note: will fix the damn access later
+    // Speed values for each state
     public float normalSpeed = 10f;
     public float stealthSpeed = 4f;
     public float alertSpeed = 10f;
 
-   
+    // ---------------------------------------- LIGHT & SOUND REFERENCES ----------------------------------------
+    [Header("Light Settings")]
+    public Light environmentLight;
+    private float defaultLightIntensity;
+
+    [Header("Alert System")]
+    public Light[] alertLights;
+    public Color[] alertColors = { Color.red, Color.blue };
+    private bool isBlinking = false;
+    private float blinkInterval = 0.5f;
+
+    [Header("Alert Light Follow Settings")]
+    public float alertLightHeight = 3f;
+    public float alertLightDistance = 2f;
+
+    [Header("Audio")]
+    public AudioSource alarmAudioSource;
+    public AudioClip alarmSound;
+
+    [Header("Bat-Signal")]
+    public Light batSignalLight;
+    private bool isBatSignalOn = false;
+    public float batSignalRotationSpeed = 10f;
 
     // ---------------------------------------- UNITY METHODS ----------------------------------------
     void Start()
     {
-       
+        // FIXED: Store initial light intensity
+        if (environmentLight != null)
+        {
+            defaultLightIntensity = environmentLight.intensity;
+            Debug.Log($"Default light intensity: {defaultLightIntensity}");
+        }
+        else
+        {
+            Debug.LogError("Environment Light not assigned in Inspector!");
+            defaultLightIntensity = 1.0f; // Safe default
+        }
 
         // Initialize systems
-        //SetAlertLightsActive(false);
+        SetAlertLightsActive(false);
 
         // Apply initial state effects
         ApplyStateEffects();
@@ -30,13 +62,46 @@ public class SceneManager : MonoBehaviour
     {
         // Handle all input and state changes
         HandleStateInput();
-        //HandleBatSignal(); implement later
+        HandleBatSignal(); // UNCOMMENTED
+
+        // NEW: Make alert lights follow player
+        if (currentState == BatmanState.Alert)
+        {
+            UpdateAlertLightPositions();
+        }
     }
 
-    // ---------------------------------------- PUBLIC METHODS (For BatmanController) ----------------------------------------
+    // Method to update alert light positions
+    /*void UpdateAlertLightPositions()
+    {
+        if (alertLights == null || alertLights.Length == 0)
+            return;
+
+        // Calculate positions relative to player
+        Vector3 playerPos = transform.position;
+
+        // Light 1: Left side
+        if (alertLights.Length > 0 && alertLights[0] != null)
+        {
+            Vector3 leftPos = playerPos +
+                            (-transform.right * alertLightDistance) +
+                            (Vector3.up * alertLightHeight);
+            alertLights[0].transform.position = leftPos;
+        }
+
+        // Light 2: Right side  
+        if (alertLights.Length > 1 && alertLights[1] != null)
+        {
+            Vector3 rightPos = playerPos +
+                             (transform.right * alertLightDistance) +
+                             (Vector3.up * alertLightHeight);
+            alertLights[1].transform.position = rightPos;
+        }
+    }
+    */
+    // ---------------------------------------- PUBLIC METHODS ----------------------------------------
     public float GetCurrentMoveSpeed()
     {
-        // Return speed based on current state
         switch (currentState)
         {
             case BatmanState.Normal:
@@ -71,7 +136,7 @@ public class SceneManager : MonoBehaviour
     void ChangeState(BatmanState newState)
     {
         // Exit current state
-        //ExitCurrentState(); #TODO :-)
+        ExitCurrentState();
 
         // Set new state
         currentState = newState;
@@ -81,81 +146,52 @@ public class SceneManager : MonoBehaviour
         ApplyStateEffects();
     }
 
-
     void ExitCurrentState()
     {
-        ///*
-        // Clean up current state effects
         if (currentState == BatmanState.Alert)
         {
             if (isBlinking) StopAllCoroutines();
             isBlinking = false;
-            //SetAlertLightsActive(false);
+            SetAlertLightsActive(false);
             if (alarmAudioSource != null && alarmAudioSource.isPlaying)
                 alarmAudioSource.Stop();
         }
-         //*/
     }
-
-
 
     void ApplyStateEffects()
     {
         switch (currentState)
         {
             case BatmanState.Normal:
-                //SetEnvironmentLightIntensity(defaultLightIntensity); -> for changing the damn lights will add onto it later
+                SetEnvironmentLightIntensity(defaultLightIntensity);
                 break;
 
             case BatmanState.Stealth:
-                //SetEnvironmentLightIntensity(defaultLightIntensity * 0.3f); -> same thing
+                SetEnvironmentLightIntensity(defaultLightIntensity * 0.3f);
                 break;
 
             case BatmanState.Alert:
-                //SetEnvironmentLightIntensity(defaultLightIntensity * 1.5f); -> same thing
-                StartAlertEffects();// -> will implement later
+                SetEnvironmentLightIntensity(defaultLightIntensity * 1.5f);
+                StartAlertEffects();
                 break;
         }
     }
-
-    // ---------------------------------------- LIGHT & SOUND REFERENCES ----------------------------------------
-    [Header("Light Settings")]
-    public Light environmentLight;
-    private float defaultLightIntensity;
-
-    [Header("Alert System")]
-    public Light[] alertLights;
-    public Color[] alertColors = { Color.red, Color.blue };
-    private bool isBlinking = false;
-    private float blinkInterval = 0.5f;
-
-    [Header("Audio")]
-    public AudioSource alarmAudioSource;
-    public AudioClip alarmSound;
-
-    [Header("Bat-Signal")]
-    public Light batSignalLight;
-    private bool isBatSignalOn = false;
-    public float batSignalRotationSpeed = 10f;
-
-
-
-
-
-
-
-
-
 
     // ---------------------------------------- LIGHT & SOUND EFFECTS ----------------------------------------
     void SetEnvironmentLightIntensity(float intensity)
     {
         if (environmentLight != null)
+        {
             environmentLight.intensity = intensity;
+            Debug.Log($"Light intensity set to: {intensity}");
+        }
     }
 
     void StartAlertEffects()
     {
+        // First position the lights
+        UpdateAlertLightPositions();
+
         // Start light blinking
         if (!isBlinking)
         {
@@ -202,8 +238,6 @@ public class SceneManager : MonoBehaviour
         }
     }
 
-
-
     // ---------------------------------------- BAT-SIGNAL CONTROL ----------------------------------------
     void HandleBatSignal()
     {
@@ -226,7 +260,38 @@ public class SceneManager : MonoBehaviour
         if (batSignalLight != null)
             batSignalLight.enabled = isBatSignalOn;
 
-        Debug.Log($"Bat-Signal: {(isBatSignalOn ? "ON" : "OFF")}"); // because I am frustrated.
+        Debug.Log($"Bat-Signal: {(isBatSignalOn ? "ON" : "OFF")}");
     }
+    void UpdateAlertLightPositions()
+    {
+        if (alertLights == null || alertLights.Length == 0)
+            return;
 
+        // Get player position
+        Vector3 playerPos = transform.position;
+
+        // Light 1: Left side
+        if (alertLights.Length > 0 && alertLights[0] != null)
+        {
+            Vector3 leftPos = playerPos +
+                            (-transform.right * alertLightDistance) +
+                            (Vector3.up * alertLightHeight);
+
+            alertLights[0].transform.position = leftPos;
+
+            // FORCE UPDATE: Also update the light component's transform
+            alertLights[0].transform.hasChanged = true;
+        }
+
+        // Light 2: Right side  
+        if (alertLights.Length > 1 && alertLights[1] != null)
+        {
+            Vector3 rightPos = playerPos +
+                             (transform.right * alertLightDistance) +
+                             (Vector3.up * alertLightHeight);
+
+            alertLights[1].transform.position = rightPos;
+            alertLights[1].transform.hasChanged = true;
+        }
+    }
 }
