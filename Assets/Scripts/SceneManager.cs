@@ -81,7 +81,23 @@ public class SceneManager : MonoBehaviour
         ApplyStateEffects();
     }
 
-  
+
+    void ExitCurrentState()
+    {
+        ///*
+        // Clean up current state effects
+        if (currentState == BatmanState.Alert)
+        {
+            if (isBlinking) StopAllCoroutines();
+            isBlinking = false;
+            //SetAlertLightsActive(false);
+            if (alarmAudioSource != null && alarmAudioSource.isPlaying)
+                alarmAudioSource.Stop();
+        }
+         //*/
+    }
+
+
 
     void ApplyStateEffects()
     {
@@ -102,6 +118,115 @@ public class SceneManager : MonoBehaviour
         }
     }
 
-    void StartAlertEffects() { }
+    // ---------------------------------------- LIGHT & SOUND REFERENCES ----------------------------------------
+    [Header("Light Settings")]
+    public Light environmentLight;
+    private float defaultLightIntensity;
+
+    [Header("Alert System")]
+    public Light[] alertLights;
+    public Color[] alertColors = { Color.red, Color.blue };
+    private bool isBlinking = false;
+    private float blinkInterval = 0.5f;
+
+    [Header("Audio")]
+    public AudioSource alarmAudioSource;
+    public AudioClip alarmSound;
+
+    [Header("Bat-Signal")]
+    public Light batSignalLight;
+    private bool isBatSignalOn = false;
+    public float batSignalRotationSpeed = 10f;
+
+
+
+
+
+
+
+
+
+
+    // ---------------------------------------- LIGHT & SOUND EFFECTS ----------------------------------------
+    void SetEnvironmentLightIntensity(float intensity)
+    {
+        if (environmentLight != null)
+            environmentLight.intensity = intensity;
+    }
+
+    void StartAlertEffects()
+    {
+        // Start light blinking
+        if (!isBlinking)
+        {
+            StartCoroutine(BlinkAlertLights());
+            isBlinking = true;
+        }
+
+        // Play alarm sound
+        if (alarmAudioSource != null && alarmSound != null && !alarmAudioSource.isPlaying)
+        {
+            alarmAudioSource.clip = alarmSound;
+            alarmAudioSource.loop = true;
+            alarmAudioSource.Play();
+        }
+    }
+
+    IEnumerator BlinkAlertLights()
+    {
+        int colorIndex = 0;
+        while (currentState == BatmanState.Alert)
+        {
+            // Set all alert lights to current color
+            foreach (Light light in alertLights)
+            {
+                if (light != null)
+                {
+                    light.enabled = true;
+                    light.color = alertColors[colorIndex];
+                }
+            }
+
+            // Switch to next color
+            colorIndex = (colorIndex + 1) % alertColors.Length;
+            yield return new WaitForSeconds(blinkInterval);
+        }
+    }
+
+    void SetAlertLightsActive(bool isActive)
+    {
+        foreach (Light light in alertLights)
+        {
+            if (light != null)
+                light.enabled = isActive;
+        }
+    }
+
+
+
+    // ---------------------------------------- BAT-SIGNAL CONTROL ----------------------------------------
+    void HandleBatSignal()
+    {
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            ToggleBatSignal();
+        }
+
+        // Rotate Bat-Signal if active
+        if (isBatSignalOn && batSignalLight != null)
+        {
+            batSignalLight.transform.Rotate(0, batSignalRotationSpeed * Time.deltaTime, 0);
+        }
+    }
+
+    void ToggleBatSignal()
+    {
+        isBatSignalOn = !isBatSignalOn;
+
+        if (batSignalLight != null)
+            batSignalLight.enabled = isBatSignalOn;
+
+        Debug.Log($"Bat-Signal: {(isBatSignalOn ? "ON" : "OFF")}"); // because I am frustrated.
+    }
 
 }
