@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 public class SceneManager : MonoBehaviour
 {
@@ -8,9 +9,12 @@ public class SceneManager : MonoBehaviour
     public BatmanState currentState = BatmanState.Normal;
 
     // Speed values for each state
-    public float normalSpeed = 10f;
-    public float stealthSpeed = 4f;
-    public float alertSpeed = 10f;
+    private float normalSpeed = 7f;
+    private float stealthSpeed = 4f;
+    private float alertSpeed = 10f;
+
+    //adding the damn shift speed
+    private float Shift_speed = 5f;
 
     // ---------------------------------------- LIGHT & SOUND REFERENCES ----------------------------------------
     [Header("Light Settings")]
@@ -59,6 +63,20 @@ public class SceneManager : MonoBehaviour
         // Handle all input and state changes
         HandleStateInput();
         HandleBatSignal();
+
+
+        // handlign speed change through shift press
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+
+            Shift_speed = 5;
+        }
+        else
+        {
+
+            Shift_speed = 0;
+        }
+
     }
 
     // ---------------------------------------- PUBLIC METHODS ----------------------------------------
@@ -67,13 +85,13 @@ public class SceneManager : MonoBehaviour
         switch (currentState)
         {
             case BatmanState.Normal:
-                return normalSpeed;
+                return normalSpeed + Shift_speed;
             case BatmanState.Stealth:
-                return stealthSpeed;
+                return stealthSpeed + Shift_speed;
             case BatmanState.Alert:
-                return alertSpeed;
+                return alertSpeed + Shift_speed;
             default:
-                return normalSpeed;
+                return normalSpeed + Shift_speed;
         }
     }
 
@@ -92,6 +110,7 @@ public class SceneManager : MonoBehaviour
         {
             ChangeState(BatmanState.Alert);
         }
+        
     }
 
     // ---------------------------------------- STATE MANAGEMENT ----------------------------------------
