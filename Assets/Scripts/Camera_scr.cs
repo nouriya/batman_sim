@@ -3,8 +3,8 @@ using UnityEngine;
 public class CameraOrbitFollow : MonoBehaviour
 {
     [Header("Target Settings")]
-    public Transform target;                // Drag Batman here
-    public Vector3 offset = new Vector3(0f, 2f, -5f);  // Camera offset from player
+    public Transform target;
+    public Vector3 offset = new Vector3(0f, -2.5f, -10f);  // Camera offset from player
 
     [Header("Follow Settings")]
     public float followSpeed = 10f;         // Position follow speed
@@ -15,13 +15,15 @@ public class CameraOrbitFollow : MonoBehaviour
     public float orbitSpeed = 2f;           // Mouse orbit speed
     public float verticalAngleLimit = 80f;  // Up/down look limit
 
+    // throws camera out of the walls
     [Header("Collision Settings")]
-    public LayerMask collisionMask;         // Set to "Default"
-    public float collisionOffset = 0.3f;    // Push camera out from walls
+    public LayerMask collisionMask;
+    public float collisionOffset = 0.3f;
 
+    //camera rotation
     private Vector3 currentOffset;
-    private float currentYaw = 0f;          // Horizontal rotation
-    private float currentPitch = 20f;       // Vertical rotation (start looking slightly down)
+    private float currentYaw = 0f; 
+    private float currentPitch = 20f;   
     private Vector3 smoothVelocity;
 
     void Start()
@@ -48,12 +50,13 @@ public class CameraOrbitFollow : MonoBehaviour
         HandleCameraCollision();
     }
 
+    // orbit the camera pos by right click 
     void HandleOrbitInput()
     {
         if (!orbitEnabled) return;
 
-        // Get mouse input for orbiting
-        if (Input.GetMouseButton(1))  // Right mouse button
+   
+        if (Input.GetMouseButton(1))
         {
             currentYaw += Input.GetAxis("Mouse X") * orbitSpeed;
             currentPitch -= Input.GetAxis("Mouse Y") * orbitSpeed;
@@ -70,16 +73,16 @@ public class CameraOrbitFollow : MonoBehaviour
 
     void UpdateCameraPosition()
     {
-        // Calculate rotation based on angles
+        // Calculate angles
         Quaternion rotation = Quaternion.Euler(currentPitch, currentYaw, 0f);
 
-        // Calculate desired position (rotated offset behind player)
+        // Calculate position 
         Vector3 desiredPosition = target.position + rotation * offset;
 
-        // Smoothly move to desired position
+        // move to position
         transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref smoothVelocity, 1f / followSpeed);
 
-        // Make camera look at player (slightly above center)
+        // Make camera look at player
         Vector3 lookTarget = target.position + Vector3.up * 1f;
         transform.LookAt(lookTarget);
     }

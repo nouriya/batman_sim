@@ -108,6 +108,8 @@ public class SceneManager : MonoBehaviour
         ApplyStateEffects();
     }
 
+
+    //--------------------------------------check alert state and adjust stuff acordingly-------------------------------------
     void ExitCurrentState()
     {
         if (currentState == BatmanState.Alert)
@@ -120,6 +122,7 @@ public class SceneManager : MonoBehaviour
         }
     }
 
+    //--------------------------------------change light intensity based on state------------------------------------------------
     void ApplyStateEffects()
     {
         switch (currentState)
