@@ -32,6 +32,7 @@ public class SceneManager : MonoBehaviour
     public AudioClip alarmSound;
 
     [Header("Bat-Signal")]
+    public GameObject batSignalObject;
     public Light batSignalLight;
     private bool isBatSignalOn = false;
     public float batSignalRotationSpeed = 10f;
@@ -43,23 +44,21 @@ public class SceneManager : MonoBehaviour
         if (environmentLight != null)
         {
             defaultLightIntensity = environmentLight.intensity;
-            Debug.Log($"Default light intensity: {defaultLightIntensity}");
         }
         else
         {
-            Debug.LogError("Environment Light not assigned in Inspector!");
-            defaultLightIntensity = 1.0f; // Safe default
+
+            defaultLightIntensity = 1.0f; 
         }
 
-        // Initialize systems
         SetAlertLightsActive(false);
 
-        // Apply initial state effects
         ApplyStateEffects();
     }
 
     void Update()
     {
+
         // Handle all input and state changes
         HandleStateInput();
         HandleBatSignal();
@@ -80,6 +79,12 @@ public class SceneManager : MonoBehaviour
     }
 
     // ---------------------------------------- PUBLIC METHODS ----------------------------------------
+    
+    /// <summary>
+    /// return current speed or what it shoube based on the state we are 
+    /// as well if shift is pressed or not
+    /// </summary>
+    /// <returns>calculated speed</returns>
     public float GetCurrentMoveSpeed()
     {
         switch (currentState)
@@ -129,6 +134,7 @@ public class SceneManager : MonoBehaviour
 
 
     //--------------------------------------check alert state and adjust stuff acordingly-------------------------------------
+    
     void ExitCurrentState()
     {
         if (currentState == BatmanState.Alert)
@@ -142,6 +148,9 @@ public class SceneManager : MonoBehaviour
     }
 
     //--------------------------------------change light intensity based on state------------------------------------------------
+    /// <summary>
+    /// changes light intensity based on state
+    /// </summary>
     void ApplyStateEffects()
     {
         switch (currentState)
@@ -162,15 +171,21 @@ public class SceneManager : MonoBehaviour
     }
 
     // ---------------------------------------- LIGHT & SOUND EFFECTS ----------------------------------------
+    /// <summary>
+    /// change light intensity based on the current state
+    /// </summary>
+    /// <param name="intensity"></param>
+    
     void SetEnvironmentLightIntensity(float intensity)
     {
         if (environmentLight != null)
         {
             environmentLight.intensity = intensity;
-            Debug.Log($"Light intensity set to: {intensity}");
         }
     }
-
+    /// <summary>
+    /// play the alarm soundeffect
+    /// </summary>
     void StartAlertEffects()
     {
         // Start light blinking
@@ -189,12 +204,18 @@ public class SceneManager : MonoBehaviour
         }
     }
 
+
+    /// <summary>
+    ///  basically switches colors for the alarm
+    /// </summary>
+    /// <returns></returns>
+
     IEnumerator BlinkAlertLights()
     {
         int colorIndex = 0;
         while (currentState == BatmanState.Alert)
         {
-            // Set all alert lights to current color
+
             foreach (Light light in alertLights)
             {
                 if (light != null)
@@ -210,6 +231,10 @@ public class SceneManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    // you can have multiple light to switch from but I only placed 2 here
+    // enables them on active state
+    /// </summary>
     void SetAlertLightsActive(bool isActive)
     {
         foreach (Light light in alertLights)
@@ -220,6 +245,11 @@ public class SceneManager : MonoBehaviour
     }
 
     // ---------------------------------------- BAT-SIGNAL CONTROL ----------------------------------------
+    
+    /// <summary>
+    /// chacks if bat signal is active enables and rotates the light that has the bat logo sprite on it
+    /// </summary>
+    
     void HandleBatSignal()
     {
         if (Input.GetKeyDown(KeyCode.B))
@@ -227,20 +257,28 @@ public class SceneManager : MonoBehaviour
             ToggleBatSignal();
         }
 
-        // Rotate Bat-Signal if active
-        if (isBatSignalOn && batSignalLight != null)
+        // Rotate the damn Bat-Signal if active
+        if (isBatSignalOn && batSignalObject != null)
         {
-            batSignalLight.transform.Rotate(0, batSignalRotationSpeed * Time.deltaTime, 0);
+            batSignalObject.transform.Rotate(0, batSignalRotationSpeed * Time.deltaTime, 0);
         }
     }
-
+    /// <summary>
+    /// handles enabling and disabling the batsignal
+    /// also used inside HandleBatSignal
+    /// </summary>
     void ToggleBatSignal()
     {
         isBatSignalOn = !isBatSignalOn;
 
-        if (batSignalLight != null)
+        if (batSignalObject != null)
+        {
+            batSignalObject.SetActive(isBatSignalOn);
+        }
+        else if (batSignalLight != null)
+        {
             batSignalLight.enabled = isBatSignalOn;
+        }
 
-        Debug.Log($"Bat-Signal: {(isBatSignalOn ? "ON" : "OFF")}");
     }
 }

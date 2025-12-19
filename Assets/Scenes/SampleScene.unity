@@ -1526,10 +1526,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentState: 0
-  normalSpeed: 7
-  stealthSpeed: 4
-  alertSpeed: 10
-  Shift_speed: 5
   environmentLight: {fileID: 410087040}
   alertLights:
   - {fileID: 682588471}
@@ -1539,6 +1535,7 @@ MonoBehaviour:
   - {r: 0, g: 0, b: 1, a: 1}
   alarmAudioSource: {fileID: 1609508001}
   alarmSound: {fileID: 8300000, guid: b62d70c07c658f84184400ba476cebd4, type: 3}
+  batSignalObject: {fileID: 1011645060}
   batSignalLight: {fileID: 1011645062}
   batSignalRotationSpeed: 10
 --- !u!1 &1552985072

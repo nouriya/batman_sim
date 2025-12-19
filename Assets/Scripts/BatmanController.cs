@@ -27,6 +27,9 @@ public class BatmanController : MonoBehaviour
         HandleMovement();
     }
 
+    /// <summary>
+    /// basicallly collects input and handles movement and stuff
+    /// </summary>
     void HandleMovement()
     {
         // Get movement input

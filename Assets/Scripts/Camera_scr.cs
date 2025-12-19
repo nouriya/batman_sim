@@ -70,7 +70,9 @@ public class CameraOrbitFollow : MonoBehaviour
         // Clamp vertical angle
         currentPitch = Mathf.Clamp(currentPitch, -verticalAngleLimit, verticalAngleLimit);
     }
-
+    /// <summary>
+    /// cammera had to follow the car
+    /// </summary>
     void UpdateCameraPosition()
     {
         // Calculate angles
@@ -86,33 +88,36 @@ public class CameraOrbitFollow : MonoBehaviour
         Vector3 lookTarget = target.position + Vector3.up * 1f;
         transform.LookAt(lookTarget);
     }
-
+    /// <summary>
+    /// wrote this for collision control but didn't actually use it
+    /// </summary>
     void HandleCameraCollision()
     {
         Vector3 cameraToTarget = target.position - transform.position;
         float distance = cameraToTarget.magnitude;
 
-        // Raycast from camera to player
         RaycastHit hit;
         if (Physics.Raycast(transform.position, cameraToTarget.normalized, out hit, distance, collisionMask))
         {
-            // If something is between camera and player
             float newDistance = hit.distance - collisionOffset;
 
-            // Move camera closer to player
             Vector3 adjustedPosition = transform.position + cameraToTarget.normalized * (distance - newDistance);
             transform.position = adjustedPosition;
         }
     }
 
-    // Public method to reset camera behind player
+    /// <summary> 
+    /// Public method to reset camera behind player
+    /// </summary>
     public void ResetBehindPlayer()
     {
         currentYaw = target.eulerAngles.y;
         currentPitch = 20f;
     }
-
+    /// <summary>
     // Toggle between orbit and follow modes
+    /// </summary>
+    /// <param name="enable"></param>
     public void ToggleOrbit(bool enable)
     {
         orbitEnabled = enable;
